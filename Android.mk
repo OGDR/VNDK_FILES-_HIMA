@@ -1,47 +1,55 @@
 LOCAL_PATH := $(call my-dir)
-
+include $(LOCAL_PATH)/../common.mk
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := \
-    AudioMixer.cpp.arm \
-    AudioResampler.cpp.arm \
-    AudioResamplerCubic.cpp.arm \
-    AudioResamplerSinc.cpp.arm \
-    AudioResamplerDyn.cpp.arm \
-    BufferProviders.cpp \
-    RecordBufferConverter.cpp \
-
-LOCAL_C_INCLUDES := \
-    $(TOP) \
-    $(call include-path-for, audio-utils) \
-    $(LOCAL_PATH)/include \
+LOCAL_MODULE                  := hwcomposer.$(TARGET_BOARD_PLATFORM)
+LOCAL_VENDOR_MODULE           := true
+LOCAL_MODULE_RELATIVE_PATH    := hw
+LOCAL_MODULE_TAGS             := optional
+LOCAL_C_INCLUDE_DIRS 		  := \/system/$(common_includes) $(kernel_includes) \
+                                 $(TOP)/external/skia/include/core \
+                                 $(TOP)/external/skia/include/images
+LOCAL_SHARED_LIBRARIES 		 := \
+	libmedia \
+    libskia \
     
-LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/system/include
+LOCAL_SHARED_LIBRARIES		  := libmedia libskia
+    
+LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES, libmedia, libskia)
 
-LOCAL_SHARED_LIBRARIES := \
-	libnbaio \
-    libsonic \
-	
-LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libnbaio, libsonic)
+ifeq ($(TARGET_USES_QCOM_BSP),true)
+LOCAL_SHARED_LIBRARIES += libskia
+endif
 
-LOCAL_ADDITIONAL_DEPENDENCIES := libnbaio libsonic 
+LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes) \
+                                 $(TOP)/external/skia/include/core \
+                                 $(TOP)/external/skia/include/images
+LOCAL_SHARED_LIBRARIES        := $(common_libs) libEGL liboverlay \
+                                 libhdmi libqdutils libhardware_legacy \
+                                 libdl libmemalloc libqservice libsync \
+                                 libbinder libbfqio_vendor
 
-LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
+#ifeq ($(TARGET_USES_QCOM_BSP),true)
+#LOCAL_SHARED_LIBRARIES += libskia
+#endif #TARGET_USES_QCOM_BSP
 
-LOCAL_SHARED_LIBRARIES := \
-    libaudiohal \
-    libaudioutils \
-    libcutils \
-    liblog \
-    libutils \
+LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdhwcomposer\" -Wno-absolute-value \
+                                 -Wno-float-conversion -Wno-unused-parameter
+#Enable Dynamic FPS if PHASE_OFFSET is not set
+ifeq ($(VSYNC_EVENT_PHASE_OFFSET_NS),)
+    LOCAL_CFLAGS += -DDYNAMIC_FPS
+endif
 
-LOCAL_MODULE := libaudioprocessing
-LOCAL_VENDOR_MODULE := true
-LOCAL_CFLAGS := -Werror -Wall
-
-# uncomment to disable NEON on architectures that actually do support NEON, for benchmarking
-#LOCAL_CFLAGS += -DUSE_NEON=false
-
+LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
+LOCAL_SRC_FILES               := hwc.cpp          \
+                                 hwc_utils.cpp    \
+                                 hwc_uevents.cpp  \
+                                 hwc_vsync.cpp    \
+                                 hwc_fbupdate.cpp \
+                                 hwc_mdpcomp.cpp  \
+                                 hwc_copybit.cpp  \
+                                 hwc_qclient.cpp  \
+                                 hwc_dump_layers.cpp \
+                                 hwc_ad.cpp \
+                                 hwc_virtual.cpp
 include $(BUILD_SHARED_LIBRARY)
-
-include $(call all-makefiles-under,$(LOCAL_PATH))
