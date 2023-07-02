@@ -1,55 +1,52 @@
-LOCAL_PATH := $(call my-dir)
+# Copyright (C) 2008 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+LOCAL_PATH:= $(call my-dir)
+#LOCAL_USE_VNDK
 include $(LOCAL_PATH)/../common.mk
-include $(CLEAR_VARS)
 
-LOCAL_MODULE                  := hwcomposer.$(TARGET_BOARD_PLATFORM)
+include $(CLEAR_VARS)
+LOCAL_HEADER_LIBRARIES_to		:= $(common_header_export_path)		
+LOCAL_HEADER_LIBRARIES			:= copybit.h copybit_priv.h c2d2.h
+include $(BUILD_HEADER_LIBRARY.Modules)
+#LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)	
+#LOCAL_COPY_HEADERS            := copybit.h copybit_priv.h c2d2.h
+#include $(BUILD_COPY_HEADERS)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE                  := copybit.$(TARGET_BOARD_PLATFORM)
 LOCAL_VENDOR_MODULE           := true
 LOCAL_MODULE_RELATIVE_PATH    := hw
 LOCAL_MODULE_TAGS             := optional
-LOCAL_C_INCLUDE_DIRS 		  := \/system/$(common_includes) $(kernel_includes) \
-                                 $(TOP)/external/skia/include/core \
-                                 $(TOP)/external/skia/include/images
-LOCAL_SHARED_LIBRARIES 		 := \
-	libmedia \
-    libskia \
-    
-LOCAL_SHARED_LIBRARIES		  := libmedia libskia
-    
-LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES, libmedia, libskia)
-
-ifeq ($(TARGET_USES_QCOM_BSP),true)
-LOCAL_SHARED_LIBRARIES += libskia
-endif
-
-LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes) \
-                                 $(TOP)/external/skia/include/core \
-                                 $(TOP)/external/skia/include/images
-LOCAL_SHARED_LIBRARIES        := $(common_libs) libEGL liboverlay \
-                                 libhdmi libqdutils libhardware_legacy \
-                                 libdl libmemalloc libqservice libsync \
-                                 libbinder libbfqio_vendor
-
-#ifeq ($(TARGET_USES_QCOM_BSP),true)
-#LOCAL_SHARED_LIBRARIES += libskia
-#endif #TARGET_USES_QCOM_BSP
-
-LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdhwcomposer\" -Wno-absolute-value \
-                                 -Wno-float-conversion -Wno-unused-parameter
-#Enable Dynamic FPS if PHASE_OFFSET is not set
-ifeq ($(VSYNC_EVENT_PHASE_OFFSET_NS),)
-    LOCAL_CFLAGS += -DDYNAMIC_FPS
-endif
-
+LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes)
+LOCAL_SHARED_LIBRARIES        := $(common_libs) libdl libmemalloc
+LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdcopybit\"
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
-LOCAL_SRC_FILES               := hwc.cpp          \
-                                 hwc_utils.cpp    \
-                                 hwc_uevents.cpp  \
-                                 hwc_vsync.cpp    \
-                                 hwc_fbupdate.cpp \
-                                 hwc_mdpcomp.cpp  \
-                                 hwc_copybit.cpp  \
-                                 hwc_qclient.cpp  \
-                                 hwc_dump_layers.cpp \
-                                 hwc_ad.cpp \
-                                 hwc_virtual.cpp
-include $(BUILD_SHARED_LIBRARY)
+
+ifeq ($(TARGET_USES_C2D_COMPOSITION),true)
+    LOCAL_CFLAGS += -DCOPYBIT_Z180=1 -DC2D_SUPPORT_DISPLAY=1
+    LOCAL_SRC_FILES := copybit_c2d.cpp software_converter.cpp
+    include $(BUILD_SHARED_LIBRARY)
+else
+    ifneq ($(call is-chipset-in-board-platform,msm7630),true)
+        ifeq ($(call is-board-platform-in-list,$(MSM7K_BOARD_PLATFORMS)),true)
+            LOCAL_CFLAGS += -DCOPYBIT_MSM7K=1
+            LOCAL_SRC_FILES := software_converter.cpp copybit.cpp
+            include $(BUILD_SHARED_LIBRARY)
+        endif
+        ifeq ($(call is-board-platform-in-list, msm8610 msm8909),true)
+            LOCAL_SRC_FILES := software_converter.cpp copybit.cpp
+            include $(BUILD_SHARED_LIBRARY)
+        endif
+    endif
+endif
