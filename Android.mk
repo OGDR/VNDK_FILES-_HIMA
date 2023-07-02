@@ -1,52 +1,96 @@
-# Copyright (C) 2008 The Android Open Source Project
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 LOCAL_PATH:= $(call my-dir)
-#LOCAL_USE_VNDK
-include $(LOCAL_PATH)/../common.mk
 
 include $(CLEAR_VARS)
-LOCAL_HEADER_LIBRARIES_to		:= $(common_header_export_path)		
-LOCAL_HEADER_LIBRARIES			:= copybit.h copybit_priv.h c2d2.h
-include $(BUILD_HEADER_LIBRARY.Modules)
-#LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)	
-#LOCAL_COPY_HEADERS            := copybit.h copybit_priv.h c2d2.h
-#include $(BUILD_COPY_HEADERS)
+
+LOCAL_SRC_FILES := \
+    ServiceUtilities.cpp
+
+# FIXME Move this library to frameworks/native
+LOCAL_MODULE := libserviceutility
+
+LOCAL_SHARED_LIBRARIES := \
+    libcutils \
+    libutils \
+    liblog \
+    libbinder
+
+LOCAL_CFLAGS := -Wall -Werror
+
+include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE                  := copybit.$(TARGET_BOARD_PLATFORM)
-LOCAL_VENDOR_MODULE           := true
-LOCAL_MODULE_RELATIVE_PATH    := hw
-LOCAL_MODULE_TAGS             := optional
-LOCAL_C_INCLUDES              := $(common_includes) $(kernel_includes)
-LOCAL_SHARED_LIBRARIES        := $(common_libs) libdl libmemalloc
-LOCAL_CFLAGS                  := $(common_flags) -DLOG_TAG=\"qdcopybit\"
-LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps)
 
-ifeq ($(TARGET_USES_C2D_COMPOSITION),true)
-    LOCAL_CFLAGS += -DCOPYBIT_Z180=1 -DC2D_SUPPORT_DISPLAY=1
-    LOCAL_SRC_FILES := copybit_c2d.cpp software_converter.cpp
-    include $(BUILD_SHARED_LIBRARY)
-else
-    ifneq ($(call is-chipset-in-board-platform,msm7630),true)
-        ifeq ($(call is-board-platform-in-list,$(MSM7K_BOARD_PLATFORMS)),true)
-            LOCAL_CFLAGS += -DCOPYBIT_MSM7K=1
-            LOCAL_SRC_FILES := software_converter.cpp copybit.cpp
-            include $(BUILD_SHARED_LIBRARY)
-        endif
-        ifeq ($(call is-board-platform-in-list, msm8610 msm8909),true)
-            LOCAL_SRC_FILES := software_converter.cpp copybit.cpp
-            include $(BUILD_SHARED_LIBRARY)
-        endif
-    endif
-endif
+LOCAL_SRC_FILES:=               \
+    AudioFlinger.cpp            \
+    Threads.cpp                 \
+    Tracks.cpp                  \
+    AudioHwDevice.cpp           \
+    AudioStreamOut.cpp          \
+    SpdifStreamOut.cpp          \
+    Effects.cpp                 \
+    PatchPanel.cpp              \
+    StateQueue.cpp              \
+    BufLog.cpp                  \
+    TypedLogger.cpp
+
+LOCAL_C_INCLUDES := \
+    frameworks/av/services/audiopolicy \
+    frameworks/av/services/medialog \
+    $(call include-path-for, audio-utils)
+    
+LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/vendor/include
+
+LOCAL_SHARED_LIBRARIES := \
+	libaudiohal \
+	libaudioprocessing \
+	
+LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libaudiohal, libaudioprocessing)
+
+LOCAL_ADDITIONAL_DEPENDENCIES :=  libaudiohal libaudioprocessing 
+
+LOCAL_SHARED_LIBRARIES := \
+	libaudiospdif \
+    libaudioutils \
+    libcutils \
+    libutils \
+    liblog \
+    libbinder \
+    libaudioclient \
+    libmedialogservice \
+    libmediautils \
+    libnbaio \
+    libpowermanager \
+    libserviceutility \
+    libmediautils \
+    libmemunreachable \
+    libmedia_helper \
+
+LOCAL_STATIC_LIBRARIES := \
+    libcpustats \
+
+LOCAL_MULTILIB := $(AUDIOSERVER_MULTILIB)
+
+LOCAL_MODULE:= libaudioflinger
+#LOCAL_MODULE_VENDOR := true
+
+LOCAL_SRC_FILES += \
+    AudioWatchdog.cpp        \
+    FastCapture.cpp          \
+    FastCaptureDumpState.cpp \
+    FastCaptureState.cpp     \
+    FastMixer.cpp            \
+    FastMixerDumpState.cpp   \
+    FastMixerState.cpp       \
+    FastThread.cpp           \
+    FastThreadDumpState.cpp  \
+    FastThreadState.cpp
+
+LOCAL_CFLAGS += -DSTATE_QUEUE_INSTANTIATIONS='"StateQueueInstantiations.cpp"'
+
+LOCAL_CFLAGS += -fvisibility=hidden
+
+LOCAL_CFLAGS += -Werror -Wall
+
+include $(BUILD_SHARED_LIBRARY)
+
+include $(call all-makefiles-under,$(LOCAL_PATH))
