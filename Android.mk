@@ -1,95 +1,46 @@
-LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-    ServiceUtilities.cpp
-
-# FIXME Move this library to frameworks/native
-LOCAL_MODULE := libserviceutility
-
-LOCAL_SHARED_LIBRARIES := \
-    libcutils \
-    libutils \
-    liblog \
-    libbinder
-
-LOCAL_CFLAGS := -Wall -Werror
-
-include $(BUILD_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES:=               \
-    AudioFlinger.cpp            \
-    Threads.cpp                 \
-    Tracks.cpp                  \
-    AudioHwDevice.cpp           \
-    AudioStreamOut.cpp          \
-    SpdifStreamOut.cpp          \
-    Effects.cpp                 \
-    PatchPanel.cpp              \
-    StateQueue.cpp              \
-    BufLog.cpp                  \
-    TypedLogger.cpp
+    AudioMixer.cpp.arm \
+    AudioResampler.cpp.arm \
+    AudioResamplerCubic.cpp.arm \
+    AudioResamplerSinc.cpp.arm \
+    AudioResamplerDyn.cpp.arm \
+    BufferProviders.cpp \
+    RecordBufferConverter.cpp \
 
 LOCAL_C_INCLUDES := \
-    frameworks/av/services/audiopolicy \
-    frameworks/av/services/medialog \
-    $(call include-path-for, audio-utils)
+    $(TOP) \
+    $(call include-path-for, audio-utils) \
+    $(LOCAL_PATH)/include \
     
-LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/vendor/include
+LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/system/include
 
 LOCAL_SHARED_LIBRARIES := \
-	libaudiohal \
-	libaudioprocessing \
+	libnbaio \
+    libsonic \
 	
-LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libaudiohal, libaudioprocessing)
+LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libnbaio, libsonic)
 
-LOCAL_ADDITIONAL_DEPENDENCIES :=  libaudiohal libaudioprocessing 
+LOCAL_ADDITIONAL_DEPENDENCIES := libnbaio libsonic 
+
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
 
 LOCAL_SHARED_LIBRARIES := \
-	libaudiospdif \
+    libaudiohal \
     libaudioutils \
     libcutils \
-    libutils \
     liblog \
-    libbinder \
-    libaudioclient \
-    libmedialogservice \
-    libmediautils \
-    libnbaio \
-    libpowermanager \
-    libserviceutility \
-    libmediautils \
-    libmemunreachable \
-    libmedia_helper \
+    libutils \
 
-LOCAL_STATIC_LIBRARIES := \
-    libcpustats \
+LOCAL_MODULE := libaudioprocessing
+LOCAL_VENDOR_MODULE := true
+LOCAL_CFLAGS := -Werror -Wall
 
-LOCAL_MULTILIB := $(AUDIOSERVER_MULTILIB)
-
-LOCAL_MODULE:= libaudioflinger
-#LOCAL_MODULE_VENDOR := true
-
-LOCAL_SRC_FILES += \
-    AudioWatchdog.cpp        \
-    FastCapture.cpp          \
-    FastCaptureDumpState.cpp \
-    FastCaptureState.cpp     \
-    FastMixer.cpp            \
-    FastMixerDumpState.cpp   \
-    FastMixerState.cpp       \
-    FastThread.cpp           \
-    FastThreadDumpState.cpp  \
-    FastThreadState.cpp
-
-LOCAL_CFLAGS += -DSTATE_QUEUE_INSTANTIATIONS='"StateQueueInstantiations.cpp"'
-
-LOCAL_CFLAGS += -fvisibility=hidden
-
-LOCAL_CFLAGS += -Werror -Wall
+# uncomment to disable NEON on architectures that actually do support NEON, for benchmarking
+#LOCAL_CFLAGS += -DUSE_NEON=false
 
 include $(BUILD_SHARED_LIBRARY)
 
