@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 LOCAL_PATH:= $(call my-dir)
-#LOCAL_USE_VNDK
-include $(LOCAL_PATH)/../common.mk
 
-include $(CLEAR_VARS)
-LOCAL_HEADER_LIBRARIES_to		:= $(common_header_export_path)		
-LOCAL_HEADER_LIBRARIES			:= copybit.h copybit_priv.h c2d2.h
+include $(LOCAL_PATH)/../common.mk
 include $(BUILD_HEADER_LIBRARY.Modules)
-#LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)	
-#LOCAL_COPY_HEADERS            := copybit.h copybit_priv.h c2d2.h
-#include $(BUILD_COPY_HEADERS)
+LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)	
+LOCAL_COPY_HEADERS            := copybit.h copybit_priv.h c2d2.h
+LOCAL_USE_VNDK                : = true
+include $(BUILD_COPY_HEADERS)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE                  := copybit.$(TARGET_BOARD_PLATFORM)
