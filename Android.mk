@@ -6,16 +6,16 @@ LOCAL_MODULE                  := hwcomposer.$(TARGET_BOARD_PLATFORM)
 LOCAL_VENDOR_MODULE           := true
 LOCAL_MODULE_RELATIVE_PATH    := hw
 LOCAL_MODULE_TAGS             := optional
-LOCAL_C_INCLUDE_DIRS 		  := \/system/$(common_includes) $(kernel_includes) \
+
+LOCAL_EXPORT_C_INCLUDE_DIRS   := \/system/$(common_includes) $(kernel_includes) \
                                  $(TOP)/external/skia/include/core \
                                  $(TOP)/external/skia/include/images
-LOCAL_SHARED_LIBRARIES 		 := \
-	libmedia \
-    libskia \
-    
-LOCAL_SHARED_LIBRARIES		  := libmedia libskia
-    
+
 LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES, libmedia, libskia)
+
+LOCAL_SHARED_LIBRARIES	     := libmedia libskia
+
+LOCAL_ADDITIONAL_DEPENDENCIES	:= libmedia libskia
 
 ifeq ($(TARGET_USES_QCOM_BSP),true)
 LOCAL_SHARED_LIBRARIES += libskia
