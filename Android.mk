@@ -33,23 +33,20 @@ LOCAL_SRC_FILES:=               \
     BufLog.cpp                  \
     TypedLogger.cpp
 
+LOCAL_EXPORT_C_INCLUDE_DIRS	+= $(LOCAL_PATH)\ /vendor/include
+
+LOCAL_LDFLAGS	+= $(call intermediates-dir-for,SHARED_LIBRARIES,libaudiohal, libaudioprocessing)/libaudiohal libaudioprocessing
+ 
+LOCAL_ADDITIONAL_DEPENDENCIES	:= libaudiohal libaudioprocessing 
+
+
 LOCAL_C_INCLUDES := \
     frameworks/av/services/audiopolicy \
     frameworks/av/services/medialog \
     $(call include-path-for, audio-utils)
     
-LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/vendor/include
-
 LOCAL_SHARED_LIBRARIES := \
-	libaudiohal \
-	libaudioprocessing \
-	
-LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libaudiohal, libaudioprocessing)
-
-LOCAL_ADDITIONAL_DEPENDENCIES :=  libaudiohal libaudioprocessing 
-
-LOCAL_SHARED_LIBRARIES := \
-	libaudiospdif \
+    libaudiospdif \
     libaudioutils \
     libcutils \
     libutils \
