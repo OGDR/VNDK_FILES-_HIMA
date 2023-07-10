@@ -6,6 +6,7 @@ cc_defaults {
         "MonoPipeReader.cpp",
         "NBAIO.cpp",
     ],
+-------
     header_libs: [
         "libaudioclient_headers",
         "libaudio_system_headers",
@@ -15,7 +16,7 @@ cc_defaults {
         "libaudioclient_headers",
         "libmedia_headers",
     ],
-
+---------
     shared_libs: [
         "libaudioutils",
         "liblog",
