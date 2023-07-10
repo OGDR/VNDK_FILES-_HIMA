@@ -15,16 +15,6 @@ LOCAL_C_INCLUDES := \
     $(TOP) \
     $(call include-path-for, audio-utils) \
     $(LOCAL_PATH)/include \
-    
-LOCAL_C_INCLUDE_DIRS := $(LOCAL_PATH)\/system/include
-
-LOCAL_SHARED_LIBRARIES := \
-	libnbaio \
-    libsonic \
-	
-LOCAL_LDFLAGS += $(call intermediates-dir-for,SHARED_LIBRARIES,libnbaio, libsonic)
-
-LOCAL_ADDITIONAL_DEPENDENCIES := libnbaio libsonic 
 
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
 
@@ -33,10 +23,14 @@ LOCAL_SHARED_LIBRARIES := \
     libaudioutils \
     libcutils \
     liblog \
+    libnbaio \
+    libsonic \
     libutils \
 
 LOCAL_MODULE := libaudioprocessing
-LOCAL_VENDOR_MODULE := true
+OCAL_PROPRIETARY_MODULE := true
+LOCAL_VNDK_SUPPORT_SYSTEM_PROCESS := true
+
 LOCAL_CFLAGS := -Werror -Wall
 
 # uncomment to disable NEON on architectures that actually do support NEON, for benchmarking
